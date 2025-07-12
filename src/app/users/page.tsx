@@ -1,0 +1,109 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
+import { DeleteUserAction } from "@/lib/actions/user.action";
+import toast from "react-hot-toast";
+
+// Interface for user object
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+const Page: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/users");
+        setUsers(response.data.data);
+        setLoading(false);
+      } catch {
+        setError("Failed to fetch users");
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleDelete = async (userId: string) => {
+    setLoadingDelete(true);
+    const { status, message } = await DeleteUserAction(userId);
+    if (status == 200) {
+      toast.success(message);
+      setUsers(users.filter((user) => user._id !== userId));
+    } else {
+      toast.error(message);
+    }
+    setLoadingDelete(false);
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">All Users</h2>
+        <Link
+          href="/"
+          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        >
+          Create New
+        </Link>
+      </div>
+
+      {/* User Table */}
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        {loading ? (
+          <div className="p-6 text-center text-gray-500">Loading...</div>
+        ) : error ? (
+          <div className="p-6 text-center text-red-500">{error}</div>
+        ) : users.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">No users found</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto text-center">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Join at</th>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {users.map((user: User) => (
+                  <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(user.createdAt).toDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex space-x-3">
+                        <button
+                          disabled={loadingDelete}
+                          onClick={() => handleDelete(user._id)}
+                          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        >
+                          {loadingDelete ? "loading..." : "Delete"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Page;

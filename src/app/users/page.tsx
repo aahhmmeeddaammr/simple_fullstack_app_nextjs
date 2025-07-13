@@ -1,37 +1,23 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import Link from "next/link";
 import { DeleteUserAction } from "@/lib/actions/user.action";
 import toast from "react-hot-toast";
+import useUser from "@/hooks/useUser";
 
 // Interface for user object
 
 const Page: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, setUsers, users } = useUser();
   const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get("https://simple-fullstack-app-nextjs.vercel.app/api/users");
-        setUsers(response.data.data);
-        setLoading(false);
-      } catch {
-        setError("Failed to fetch users");
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
+  console.log(users);
 
   const handleDelete = async (userId: string) => {
     setLoadingDelete(true);
     const { status, message } = await DeleteUserAction(userId);
     if (status == 200) {
       toast.success(message);
-      setUsers(users.filter((user) => user._id !== userId));
+      setUsers(users?.filter((user) => user._id !== userId) as User[]);
     } else {
       toast.error(message);
     }
@@ -54,9 +40,7 @@ const Page: React.FC = () => {
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         {loading ? (
           <div className="p-6 text-center text-gray-500">Loading...</div>
-        ) : error ? (
-          <div className="p-6 text-center text-red-500">{error}</div>
-        ) : users.length === 0 ? (
+        ) : users?.length === 0 ? (
           <div className="p-6 text-center text-gray-500">No users found</div>
         ) : (
           <div className="overflow-x-auto">
@@ -70,14 +54,19 @@ const Page: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {users.map((user: User) => (
+                {users?.map((user: User) => (
                   <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(user.createdAt).toDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-3">
-                        <Link href={`/users/${user._id}`}>LOL</Link>
+                        <Link
+                          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                          href={`/users/${user._id}`}
+                        >
+                          Update
+                        </Link>
                         <button
                           disabled={loadingDelete}
                           onClick={() => handleDelete(user._id)}

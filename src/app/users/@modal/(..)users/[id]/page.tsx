@@ -1,4 +1,5 @@
 "use client";
+import useUser from "@/hooks/useUser";
 import { UpdateUserAction } from "@/lib/actions/user.action";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -7,6 +8,7 @@ import toast from "react-hot-toast";
 
 const Page = (props: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
+  const { fetchUsers } = useUser();
 
   const { id } = use(props.params);
 
@@ -16,7 +18,8 @@ const Page = (props: { params: Promise<{ id: string }> }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await axios.get(`https://simple-fullstack-app-nextjs.vercel.app/api/users/${id}`);
+        // const { data } = await axios.get(`https://simple-fullstack-app-nextjs.vercel.app/api/users/${id}`);
+        const { data } = await axios.get(`http://localhost:3000/api/users/${id}`);
         setName(data.data.name);
         setEmail(data.data.email);
       } catch (error) {
@@ -33,6 +36,7 @@ const Page = (props: { params: Promise<{ id: string }> }) => {
     try {
       const { message, status } = await UpdateUserAction({ email, name, id });
       if (status == 200) {
+        fetchUsers();
         toast.success(message);
         router.back();
       } else {

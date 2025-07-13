@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 
 // Interface for user object
 
-
 const Page: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -16,7 +15,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/users");
+        const response = await axios.get("https://simple-fullstack-app-nextjs.vercel.app/api/users");
         setUsers(response.data.data);
         setLoading(false);
       } catch {

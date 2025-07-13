@@ -18,8 +18,8 @@ const Page = (props: { params: Promise<{ id: string }> }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // const { data } = await axios.get(`https://simple-fullstack-app-nextjs.vercel.app/api/users/${id}`);
-        const { data } = await axios.get(`http://localhost:3000/api/users/${id}`);
+        const { data } = await axios.get(`https://simple-fullstack-app-nextjs.vercel.app/api/users/${id}`);
+        // const { data } = await axios.get(`http://localhost:3000/api/users/${id}`);
         setName(data.data.name);
         setEmail(data.data.email);
       } catch (error) {

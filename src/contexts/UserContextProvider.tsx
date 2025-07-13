@@ -21,7 +21,7 @@ const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:3000/api/users");
+      const response = await axios.get("https://simple-fullstack-app-nextjs.vercel.app/api/users");
       console.log("Users fetched:", response.data.data);
       setUsers(response.data.data);
     } catch (error) {

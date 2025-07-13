@@ -6,15 +6,7 @@ import { DeleteUserAction } from "@/lib/actions/user.action";
 import toast from "react-hot-toast";
 
 // Interface for user object
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  password: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
+
 
 const Page: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -24,7 +16,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("https://simple-fullstack-app-nextjs.vercel.app/api/users");
+        const response = await axios.get("http://localhost:3000/api/users");
         setUsers(response.data.data);
         setLoading(false);
       } catch {
@@ -86,6 +78,7 @@ const Page: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(user.createdAt).toDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-3">
+                        <Link href={`/users/${user._id}`}>LOL</Link>
                         <button
                           disabled={loadingDelete}
                           onClick={() => handleDelete(user._id)}

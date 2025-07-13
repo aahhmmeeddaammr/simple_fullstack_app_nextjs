@@ -2,6 +2,7 @@
 
 import connectToDb from "../DB/connectio";
 import UserModel from "../DB/models/User.Model";
+import { hashPassword } from "../utils/hashPassword";
 
 export const SignUpAction: ActionResponse<SignUpParams> = async (data: SignUpParams) => {
   try {
@@ -11,7 +12,9 @@ export const SignUpAction: ActionResponse<SignUpParams> = async (data: SignUpPar
     if (checkUser) {
       return { message: "Email already exist", status: 409 };
     }
-    const result = await UserModel.create([{ email, name, password }]);
+    const hashedPassword = await hashPassword(password);
+
+    const result = await UserModel.create([{ email, name, password: hashedPassword.hash }]);
     console.log({ result });
     return { message: "user register successfully", status: 201 };
   } catch (error) {

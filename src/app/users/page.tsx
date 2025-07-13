@@ -5,8 +5,6 @@ import { DeleteUserAction } from "@/lib/actions/user.action";
 import toast from "react-hot-toast";
 import useUser from "@/hooks/useUser";
 
-// Interface for user object
-
 const Page: React.FC = () => {
   const { fetchUsers, loading, setUsers, users } = useUser();
   const [loadingDelete, setLoadingDelete] = useState<boolean>(false);

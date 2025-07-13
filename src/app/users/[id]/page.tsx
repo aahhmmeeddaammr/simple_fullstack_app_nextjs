@@ -1,93 +1,88 @@
 "use client";
-import useUser from "@/hooks/useUser";
-import { UpdateUserAction } from "@/lib/actions/user.action";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { DeleteUserAction } from "@/lib/actions/user.action";
 import toast from "react-hot-toast";
+import useUser from "@/hooks/useUser";
 
-const Page = (props: { params: Promise<{ id: string }> }) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const { fetchUsers } = useUser();
-  const { id } = use(props.params);
+const Page: React.FC = () => {
+  const { fetchUsers, loading, setUsers, users } = useUser();
+  const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
+  console.log(users);
 
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data } = await axios.get(`https://simple-fullstack-app-nextjs.vercel.app/api/users/${id}`);
-        // const { data } = await axios.get(`http://localhost:3000/api/users/${id}`);
-        setName(data.data.name);
-        setEmail(data.data.email);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    };
-
-    if (id) fetchUser();
-  }, [id]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const { message, status } = await UpdateUserAction({ email, name, id });
-      if (status == 200) {
-        fetchUsers();
-        toast.success(message);
-        router.back();
-      } else {
-        toast.error(message);
-      }
-    } catch (error) {
-      console.error("Error updating user:", error);
+  const handleDelete = async (userId: string) => {
+    setLoadingDelete(true);
+    const { status, message } = await DeleteUserAction(userId);
+    if (status == 200) {
+      toast.success(message);
+      setUsers(users?.filter((user) => user._id !== userId) as User[]);
+    } else {
+      toast.error(message);
     }
+    setLoadingDelete(false);
   };
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   return (
-    <div onClick={() => router.back()} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded shadow-lg max-w-md w-full relative">
-        <h2 className="text-xl font-semibold mb-4">Update User</h2>
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">All Users</h2>
+        <Link
+          href="/"
+          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        >
+          Create New
+        </Link>
+      </div>
 
-        <form onSubmit={handleSubmit} className="">
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 mb-1">
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your Name"
-            />
+      {/* User Table */}
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        {loading ? (
+          <div className="p-6 text-center text-gray-500">Loading...</div>
+        ) : users?.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">No users found</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto text-center">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Join at</th>
+                  <th className="px-6 py-3  text-sm font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {users?.map((user: User) => (
+                  <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(user.createdAt).toDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex space-x-3">
+                        <Link
+                          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                          href={`/users/${user._id}`}
+                        >
+                          Update
+                        </Link>
+                        <button
+                          disabled={loadingDelete}
+                          onClick={() => handleDelete(user._id)}
+                          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        >
+                          {loadingDelete ? "loading..." : "Delete"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-            Submit
-          </button>
-        </form>
-
-        <button onClick={() => router.back()} className="absolute top-2 right-2 text-red-500">
-          ✕
-        </button>
+        )}
       </div>
     </div>
   );

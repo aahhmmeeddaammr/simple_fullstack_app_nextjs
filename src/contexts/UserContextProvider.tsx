@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import React, { createContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useState, ReactNode } from "react";
 
 export const UserContext = createContext<{
   users: User[] | null;
@@ -30,10 +30,6 @@ const UserContextProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   return <UserContext.Provider value={{ users, setUsers, fetchUsers, loading }}>{children}</UserContext.Provider>;
 };

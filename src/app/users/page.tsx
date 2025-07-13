@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { DeleteUserAction } from "@/lib/actions/user.action";
 import toast from "react-hot-toast";
@@ -8,7 +8,7 @@ import useUser from "@/hooks/useUser";
 // Interface for user object
 
 const Page: React.FC = () => {
-  const { loading, setUsers, users } = useUser();
+  const { fetchUsers, loading, setUsers, users } = useUser();
   const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
   console.log(users);
 
@@ -24,6 +24,9 @@ const Page: React.FC = () => {
     setLoadingDelete(false);
   };
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="flex justify-between items-center mb-8">
